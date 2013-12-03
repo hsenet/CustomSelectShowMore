@@ -1,6 +1,7 @@
 /**
  * @project: Show More Custom Select Picklist
  * @projectDescription: JQuery plugin for replacing default <select> to Custom UI to work with IE7+
+ * @usage: $(element).ShowMoreCustomSelect();
  * @version: 0.01
  * @author: Jenkin Joyer Dsouza
  * @Web: https://github.com/hsenet
