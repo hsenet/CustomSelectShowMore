@@ -2,69 +2,164 @@
  * @project: Show More Custom Select Picklist
  * @projectDescription: JQuery plugin for replacing default <select> to Custom UI to work with IE7+
  * @usage: $(element).ShowMoreCustomSelect();
- * @version: 0.01
+ * @version: 0.02
  * @author: Jenkin Joyer Dsouza
  * @Web: https://github.com/hsenet
  */
 
-$.fn.ShowMoreCustomSelect = function() {
-				if(this.length>0){
-					var ItemsToShow = 3; 
-					var $thisElement =this;
-					var $showMoreSelect = $thisElement.find("select");
-					var __inputFieldVal = "Please Select...";
-					var __inputField = "<input class='showMoreDropInput valueRegion' value='"+__inputFieldVal+"'></input>";
-					$thisElement.append(__inputField);
-					$showMoreSelect.addClass("hidden");
-					var __dropdownMenu ="<div class='showMoreDropDiv hidden'><ul class='showMoreDropUL'></ul></div>";
-					$thisElement.append(__dropdownMenu);
-					
-					$showMoreSelect.find("option").each(function(i){
-						var $this =$(this);
-						if(i<ItemsToShow) {
-							var __item = "<li class='showMoreDropLI'  value='" + $this.attr("value") + "'> " + $this.text() + "</li>";
-							$thisElement.find(".showMoreDropDiv ul").append(__item);
-						} else {
-							if(i===ItemsToShow) {
-								var __item = "<li class='showMoreDropLI' id='showMore'><a href='#'>Show More</a></li>";
-								    __item += "<li  class='hidden showMoreDropLI' value='" + $this.attr("value") + "'> " + $this.text() + "</li>";
+$.fn.ShowMoreCustomSelect = function(options) {
+				var settings = $.extend({
+					defaultText: "Please Select...",
+					noOfListItems:3
+				}, options);
+				
+				if(this.length>0){ // Run the script Only if the element exists
+					var ItemsToShow = settings.noOfListItems; 
+					var $thisElement = this;
+					var selectorIndex = $(this).length -1;
+					var $showMoreSelect = $(this).eq(selectorIndex).find("select");
+					if(!($showMoreSelect.hasClass("hidden"))) {// Only run the script once
+						var __inputFieldVal = settings.defaultText;
+						var __inputField = $("<div tabIndex='0' class='showMoreDropInput valueRegion'>"+__inputFieldVal+"</div>").appendTo($thisElement);
+						//$thisElement.append(__inputField);
+						$showMoreSelect.addClass("hidden");
+						var __dropdownMenu =$("<div class='showMoreDropDiv hidden'><ul class='showMoreDropUL'></ul></div>").appendTo($thisElement);
+						//$thisElement.append(__dropdownMenu);
+						var __NoSelectItems = $showMoreSelect.find("option").length;
+						$showMoreSelect.find("option").each(function(i){
+							//console.log(i);
+							var $this =$(this);
+							if(i<ItemsToShow) {
+								var __item = "<li class='showMoreDropLI'  rel='" + $this.attr("value") + "'> " + $this.text() + "</li>";
+								$thisElement.find(".showMoreDropDiv ul").append(__item);
 							} else {
-								var __item = "<li class='hidden showMoreDropLI' value='" + $this.attr("value") + "'> " + $this.text() + "</li>";
+								if(i===(__NoSelectItems-1)) {
+									var __item = "<li  class='hidden showMoreDropLI' rel='" + $this.attr("value") + "'> " + $this.text() + "</li>";
+										__item += "<li class='showMoreDropLI' id='showMore'><a href='#'>Show All</a></li>";
+								} else {
+									var __item = "<li class='hidden showMoreDropLI' rel='" + $this.attr("value") + "'> " + $this.text() + "</li>";
+								}
+								$thisElement.find(".showMoreDropDiv ul").append(__item);
 							}
-							$thisElement.find(".showMoreDropDiv ul").append(__item);
-						}
-					});
-					
-					
-					$thisElement.find(".showMoreDropInput").live("click",function(e){
-							//$(this).next(".showMoreDropDiv").removeClass("hidden").width($(this).innerWidth());
-							$DropDown = $thisElement.find(".showMoreDropDiv");
-							$innerWidth = $(this).innerWidth();
-							$leftMargin = $(this).outerWidth() *-1;
-							$DropDown.removeClass("hidden").width($innerWidth);
-							if($("html").hasClass("ie8")){ $DropDown.width($(this).innerWidth()-1);}
-							if($("html").hasClass("ie7")){ $DropDown.css({"margin-left":$leftMargin,"margin-top":24})}
-					});
-					
-					$thisElement.find(".showMoreDropDiv li:not('#showMore')").live("click",function(e){
-						$(".showMoreDropInput").val($(this).text()); //.html($(this).text());
-						$thisElement.find(".showMoreDropDiv li:not('#showMore')").removeClass("active");
-						$(this).addClass("active");
-						$thisElement.find(".showMoreDropDiv").addClass("hidden");
-					});
-					
-					$thisElement.find(".showMoreDropDiv #showMore").live("click", function(e){
-						e.preventDefault();
-						$(this).parents("ul").find("li").removeClass("hidden");
-						$(this).addClass("hidden");
-					});
-					
-					$("html").live("click",function(e){
-						if(e.target.className !=="showMoreDropLI" && e.target.className !== 'showMoreDropInput'  && e.target.className !=='' && e.target.className !=='showMoreDropInput valueRegion') {
+						});
+						
+						
+						$thisElement.find(".showMoreDropInput").live("click",function(e){
+								//$(this).next(".showMoreDropDiv").removeClass("hidden").width($(this).innerWidth());
+								$DropDown = $thisElement.find(".showMoreDropDiv");
+								$innerWidth = $(this).innerWidth();
+								$leftMargin = $(this).outerWidth() *-1;
+								$DropDown.removeClass("hidden").width($innerWidth);
+								if($("html").hasClass("ie8")){ $DropDown.width($(this).innerWidth()-1);}
+								//if($("html").hasClass("ie7")){ $DropDown.css({"margin-left":$leftMargin,"margin-top":24})}
+								//if($("html").hasClass("ie7")){ $DropDown.css({"margin-top":33})}
+								//console.log(e.keyCode);
+						});
+						
+						$thisElement.find(".showMoreDropDiv #showMore").live("click", function(e){
+							__inputField.focus();
+							e.preventDefault();
+							$(this).parents("ul").find("li").removeClass("hidden");
+							$(this).addClass("hidden");
+							return false;
+						});
+						
+						$thisElement.find(".showMoreDropDiv li:not('#showMore')").live("click",function(e){
+							$(".showMoreDropInput").html($(this).text()); //.val($(this).text());
+							$thisElement.find(".showMoreDropDiv li:not('#showMore')").removeClass("active");
+							$(this).addClass("active");
 							$thisElement.find(".showMoreDropDiv").addClass("hidden");
-						}
-					});
+						});
+						$thisElement.find(".showMoreDropDiv ul li").live("hover",function(){
+							$thisElement.find(".showMoreDropDiv ul li").removeClass("active");
+							if($(this).attr("id") !== "showMore") {
+								$(this).addClass("active");
+							}
+						});
+						
+						
+						$("html").live("click",function(e){
+							if(e.target.className !=="showMoreDropLI" && e.target.className !== 'showMoreDropInput'  && e.target.className !=='' && e.target.className !=='showMoreDropInput valueRegion') {
+								$thisElement.find(".showMoreDropDiv").addClass("hidden");
+							}
+						});
+						
+						var __PosCount = 0;
+						__inputField.keydown(function(e) {
+								var __dropDownHeight = $thisElement.find(".showMoreDropDiv ul").height();
+								 e.preventDefault();
+								 e = e || window.event;  
+								 var keyCode = e.keyCode || e.which;
+								 if(__dropdownMenu.is(":visible")) {
+									var __active = $thisElement.find(".showMoreDropDiv ul").find('.active');
+									if(keyCode === 40){ // When Down key is pressed
+										if(!($(".showMoreDropDiv ul li:not('#showMore'):last").hasClass("active"))) { // Prevent from looping
+											if(__active.next().length>0 && __active.next().is(":visible")){
+												if(__active.removeClass('active').next().attr("id") !== 'showMore') {
+													__active.removeClass('active').next().addClass('active');
+												}
+												
+											 }else{
+												__active.removeClass('active');
+												$thisElement.find(".showMoreDropDiv ul li:first").addClass('active');
+											} 
+											
+											if(__dropdownMenu.find("#showMore").hasClass("hidden")) {
+												var __activePos = $thisElement.find(".showMoreDropDiv ul").find('.active');
+												if(__PosCount < __dropDownHeight) {
+													__PosCount = __activePos.position().top;
+													$thisElement.find(".showMoreDropDiv ul").scrollTop(__PosCount);
+												} else {
+													__PosCount = __dropDownHeight+__activePos.position().top;
+													$thisElement.find(".showMoreDropDiv ul").scrollTop(__PosCount);
+												}
+											}	
+										}
+									}
+									if(keyCode === 38){ // When Up key is pressed
+										if(!($(".showMoreDropDiv ul li:not('#showMore'):first").hasClass("active"))) { // Prevent from Looping
+											if(__active.prev().length>0 && __active.prev().is(":visible")){
+												__active.removeClass('active').prev().addClass('active');
+											 }else{
+												__active.removeClass('active');
+												if($thisElement.find(".showMoreDropDiv ul li:last").is(":visible")){
+													if($thisElement.find(".showMoreDropDiv ul li:last").attr("id") !=="showMOre") {
+														$thisElement.find(".showMoreDropDiv ul li:last").addClass('active');
+													}
+												}
+											}  
+											if(__dropdownMenu.find("#showMore").hasClass("hidden")) {
+												var __activePos = $thisElement.find(".showMoreDropDiv ul").find('.active');
+												if(__PosCount < __dropDownHeight) {
+													__PosCount = __activePos.position().top;
+													$thisElement.find(".showMoreDropDiv ul").scrollTop(__PosCount);
+												} else {
+													__PosCount = __dropDownHeight+__activePos.position().top;
+													$thisElement.find(".showMoreDropDiv ul").scrollTop(__PosCount);
+												}
+											}	
+										}
+										
+									}
+									if(keyCode === 13){ // enter key is pressed
+										if($thisElement.find(".showMoreDropDiv li").hasClass("active")) {
+											$thisElement.find(".showMoreDropDiv li.active").trigger("click");
+										} else {
+											if($thisElement.find(".showMoreDropDiv li").attr("id") === 'showMore') {
+												$thisElement.find(".showMoreDropDiv #showMore").trigger("click");
+											}
+										}
+										
+									}
+									if(keyCode === 27){ // Escape key is pressed
+										$thisElement.find(".showMoreDropDiv").addClass("hidden");
+									}
+									return false;
+								 }
+								
+						});
+					}// Only run the script once
 					
-				}
+				}// Run the script Only if the element exists
 	
 };
